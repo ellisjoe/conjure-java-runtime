@@ -189,14 +189,14 @@
             "locked": "2.1.0"
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "3.12.0",
+            "locked": "3.13.0",
             "transitive": [
                 "com.palantir.conjure.java.runtime:okhttp-clients",
                 "com.palantir.tracing:tracing-okhttp3"
             ]
         },
         "com.squareup.okio:okio": {
-            "locked": "1.15.0",
+            "locked": "1.17.2",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
@@ -453,13 +453,13 @@
             ]
         },
         "com.squareup.okhttp3:logging-interceptor": {
-            "locked": "3.12.0",
+            "locked": "3.13.0",
             "transitive": [
                 "com.palantir.conjure.java.runtime:okhttp-clients"
             ]
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "3.12.0",
+            "locked": "3.13.0",
             "transitive": [
                 "com.netflix.feign:feign-okhttp",
                 "com.palantir.conjure.java.runtime:okhttp-clients",
@@ -468,7 +468,7 @@
             ]
         },
         "com.squareup.okio:okio": {
-            "locked": "1.15.0",
+            "locked": "1.17.2",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]

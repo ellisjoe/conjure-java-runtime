@@ -161,17 +161,17 @@
             "locked": "0.11.2"
         },
         "com.squareup.okhttp3:logging-interceptor": {
-            "locked": "3.12.0"
+            "locked": "3.13.0"
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "3.12.0",
+            "locked": "3.13.0",
             "transitive": [
                 "com.palantir.tracing:tracing-okhttp3",
                 "com.squareup.okhttp3:logging-interceptor"
             ]
         },
         "com.squareup.okio:okio": {
-            "locked": "1.15.0",
+            "locked": "1.17.2",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
@@ -383,17 +383,17 @@
             "locked": "0.11.2"
         },
         "com.squareup.okhttp3:logging-interceptor": {
-            "locked": "3.12.0"
+            "locked": "3.13.0"
         },
         "com.squareup.okhttp3:okhttp": {
-            "locked": "3.12.0",
+            "locked": "3.13.0",
             "transitive": [
                 "com.palantir.tracing:tracing-okhttp3",
                 "com.squareup.okhttp3:logging-interceptor"
             ]
         },
         "com.squareup.okio:okio": {
-            "locked": "1.15.0",
+            "locked": "1.17.2",
             "transitive": [
                 "com.squareup.okhttp3:okhttp"
             ]
