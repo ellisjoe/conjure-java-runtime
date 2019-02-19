@@ -31,7 +31,7 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'com.palantir.baseline-class-uniqueness'
 
-    sourceCompatibility = 1.8
+    sourceCompatibility = 11
     if (gradle.startParameter.taskNames.find {
         it.endsWith('verifyDependencyLocksAreCurrent') || it.endsWith('build')}) {
         gradle.startParameter.setTaskNames(gradle.startParameter.taskNames + ['generateLock'])

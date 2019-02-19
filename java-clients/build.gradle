@@ -1,0 +1,31 @@
+apply plugin: "org.inferred.processors"
+
+apply from: "${rootDir}/gradle/publish-jar.gradle"
+
+dependencies {
+    api project(':client-config')
+    api project(':keystores')
+    api "com.palantir.conjure.java.api:errors"
+
+    implementation project(':conjure-java-jackson-serialization')
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+    implementation 'com.google.guava:guava'
+    implementation 'com.palantir.safe-logging:preconditions'
+    implementation 'com.palantir.tracing:tracing-okhttp3'
+    implementation 'com.palantir.tritium:tritium-registry'
+    implementation 'io.dropwizard.metrics:metrics-core'
+    implementation 'javax.ws.rs:javax.ws.rs-api'
+    implementation 'org.slf4j:slf4j-api'
+
+    testImplementation project(":conjure-java-jersey-server")
+    testImplementation project(":keystores")
+    testImplementation "com.squareup.okhttp3:mockwebserver"
+    testImplementation "javax.ws.rs:javax.ws.rs-api"
+    testImplementation "junit:junit"
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.jmock:jmock"
+    testImplementation "org.mockito:mockito-core"
+
+    annotationProcessor "org.immutables:value"
+    compileOnly 'org.immutables:value::annotations'
+}

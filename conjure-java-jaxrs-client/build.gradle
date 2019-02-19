@@ -5,6 +5,7 @@ dependencies {
     api project(":extras:refresh-utils")
     api project(":client-config")
     api project(":okhttp-clients")
+    api project(":java-clients")
     api "com.google.code.findbugs:jsr305"
     api "javax.ws.rs:javax.ws.rs-api"
     // TODO(dsanduleac): Should be implementation, but can't because we expose feign.TextDelegateEncoder

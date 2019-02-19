@@ -19,7 +19,6 @@ package com.palantir.conjure.java.client.retrofit2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.palantir.conjure.java.client.retrofit2.OptionalObjectToStringConverterFactory.Java8OptionalDoubleStringConverter;
 import com.palantir.conjure.java.client.retrofit2.OptionalObjectToStringConverterFactory.Java8OptionalIntStringConverter;
 import com.palantir.conjure.java.client.retrofit2.OptionalObjectToStringConverterFactory.Java8OptionalLongStringConverter;
@@ -129,7 +128,7 @@ public final class OptionalObjectToStringConverterFactoryTest {
     private Annotation[] createAnnotations(Class... clazz) {
         Annotation[] annotations = new Annotation[clazz.length];
         for (int i = 0; i < clazz.length; ++i) {
-            annotations[i] = sun.reflect.annotation.AnnotationParser.annotationForMap(clazz[i], ImmutableMap.of());
+            annotations[i] = null; // TODO(jellis): get a handle on an instance of the provided annotation
         }
         return annotations;
     }
