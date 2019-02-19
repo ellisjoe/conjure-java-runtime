@@ -18,6 +18,7 @@ package com.palantir.conjure.java.client.jaxrs;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.net.HttpHeaders;
 import com.palantir.conjure.java.okhttp.HostMetricsRegistry;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,6 +68,9 @@ public final class JaxRsClientCollectionHandlingTest extends TestBase {
                 new HostMetricsRegistry(),
                 createTestConfig("http://localhost:" + server.getPort()));
         MockResponse mockResponse = new MockResponse().setResponseCode(code).setBody(body);
+        if (code == 204) {
+            mockResponse.removeHeader(HttpHeaders.CONTENT_LENGTH);
+        }
         server.enqueue(mockResponse);
     }
 

@@ -17,7 +17,6 @@
 package com.palantir.conjure.java.client.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
 import com.palantir.conjure.java.api.config.service.UserAgent;
 import com.palantir.conjure.java.client.config.ClientConfiguration;
 import com.palantir.conjure.java.client.jaxrs.feignimpl.GuavaOptionalAwareContract;
@@ -28,7 +27,6 @@ import com.palantir.conjure.java.okhttp.HostEventsSink;
 import com.palantir.conjure.java.okhttp.OkHttpClients;
 import com.palantir.http.ConjureHttpClient;
 import com.palantir.logsafe.Preconditions;
-import feign.Client;
 import feign.ConjureCborDelegateDecoder;
 import feign.ConjureCborDelegateEncoder;
 import feign.ConjureEmptyContainerDecoder;
@@ -43,20 +41,11 @@ import feign.Contract;
 import feign.Feign;
 import feign.Logger;
 import feign.Request;
-import feign.Response;
 import feign.Retryer;
 import feign.codec.Decoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.jaxrs.JAXRSContract;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Not meant to be implemented outside of this library.
@@ -114,48 +103,6 @@ abstract class AbstractFeignJaxRsClientBuilder {
                 .logLevel(Logger.Level.NONE)  // we use OkHttp interceptors for logging. (note that NONE is the default)
                 .retryer(new Retryer.Default(0, 0, 1))  // use OkHttp retry mechanism only
                 .target(serviceClass, primaryUri);
-    }
-
-    private static final class JavaClient implements Client {
-        private final HttpClient client;
-
-        private JavaClient(HttpClient client) {
-            this.client = client;
-        }
-
-        @Override
-        public Response execute(Request request, Request.Options options) throws IOException {
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(request.url()))
-                    .method(request.method(), bodyPublisher(request));
-
-            request.headers().forEach((key, vals) -> requestBuilder.header(key, Joiner.on(",").join(vals)));
-
-            HttpResponse<InputStream> response = execute(requestBuilder);
-
-            return Response.create(response.statusCode(), "", convert(response.headers().map()), response.body(), -1);
-        }
-
-        private HttpResponse<InputStream> execute(HttpRequest.Builder requestBuilder) throws IOException {
-            try {
-                return client.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new RuntimeException(e);
-            }
-        }
-
-        private HttpRequest.BodyPublisher bodyPublisher(Request request) {
-            byte[] body = request.body();
-            return body == null
-                    ? HttpRequest.BodyPublishers.noBody()
-                    : HttpRequest.BodyPublishers.ofByteArray(body);
-        }
-
-        // Feign needs a Map<K, Collection<V>> when it should take a Map<K, ? extends Collection<V>>
-        private static <K, V> Map<K, Collection<V>> convert(Map<K, ? extends Collection<V>> original) {
-            return (Map<K, Collection<V>>) original;
-        }
     }
 
     private Contract createContract() {

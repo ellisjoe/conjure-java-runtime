@@ -19,6 +19,7 @@ package com.palantir.conjure.java.client.jaxrs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.net.HttpHeaders;
 import com.palantir.conjure.java.api.config.service.BasicCredentials;
 import com.palantir.conjure.java.client.config.ClientConfiguration;
 import com.palantir.conjure.java.okhttp.HostMetricsRegistry;
@@ -68,7 +69,11 @@ public final class JaxRsClientProxyConfigTest extends TestBase {
 
     @Test
     public void testAuthenticatedProxy() throws Exception {
-        proxyServer.enqueue(new MockResponse().setResponseCode(407)); // indicates authenticated proxy
+        // indicates authenticated proxy
+        MockResponse authenticatedProxyResponse = new MockResponse()
+                .setResponseCode(407)
+                .setHeader(HttpHeaders.PROXY_AUTHENTICATE, "basic");
+        proxyServer.enqueue(authenticatedProxyResponse);
         proxyServer.enqueue(new MockResponse().setBody("\"proxyServer\""));
 
         ClientConfiguration proxiedConfig = ClientConfiguration.builder()

@@ -15,6 +15,8 @@ dependencies {
     implementation project(":keystores")
     implementation "com.google.guava:guava"
     implementation "com.github.ben-manes.caffeine:caffeine"
+    implementation "javax.xml.bind:jaxb-api:2.2.11"
+    implementation "javax.activation:activation:1.1.1"
     implementation "com.netflix.feign:feign-jackson"
     implementation("com.netflix.feign:feign-jaxrs") {
         // the shipped version clashes with the newer javax.ws.rs:javax.ws.rs-api used by (e.g.) dropwizard
