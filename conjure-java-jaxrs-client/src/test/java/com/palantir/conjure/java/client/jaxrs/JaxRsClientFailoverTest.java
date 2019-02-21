@@ -49,7 +49,7 @@ public final class JaxRsClientFailoverTest extends TestBase {
 
     @DataPoints("PinStrategies")
     public static FailoverTestCase[] pinStrategies() {
-        FailoverTestCase pinNoCache = new FailoverTestCase(new MockWebServer(), new MockWebServer(), 0,
+        FailoverTestCase pinNoCache = new FailoverTestCase(new MockWebServer(), new MockWebServer(), 100,
                 NodeSelectionStrategy.PIN_UNTIL_ERROR);
         FailoverTestCase pinWithCache = new FailoverTestCase(new MockWebServer(), new MockWebServer(), CACHE_DURATION,
                 NodeSelectionStrategy.PIN_UNTIL_ERROR);
@@ -148,8 +148,13 @@ public final class JaxRsClientFailoverTest extends TestBase {
         TestService bogusHostProxy = JaxRsClient.create(TestService.class,
                 AGENT,
                 new HostMetricsRegistry(),
-                ClientConfiguration.builder().from(createTestConfig("http://foo-bar-bogus-host.unresolvable:80",
-                        "http://localhost:" + failoverTestCase.server1.getPort())).maxNumRetries(2).build());
+                ClientConfiguration.builder().from(
+                        createTestConfig(
+                                "http://foo-bar-bogus-host.unresolvable:80",
+                                "http://localhost:" + failoverTestCase.server1.getPort()))
+                        .maxNumRetries(2)
+                        .failedUrlCooldown(Duration.ofMillis(1_000))
+                        .build());
         assertThat(bogusHostProxy.string(), is("foo"));
         assertThat(failoverTestCase.server1.getRequestCount(), is(1));
     }

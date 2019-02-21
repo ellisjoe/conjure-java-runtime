@@ -20,9 +20,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.google.common.net.HttpHeaders;
+import com.palantir.conjure.java.api.config.service.UserAgent;
+import com.palantir.conjure.java.api.config.service.UserAgents;
 import com.palantir.conjure.java.api.errors.RemoteException;
 import com.palantir.conjure.java.api.errors.SerializableError;
+import com.palantir.conjure.java.client.config.ClientConfiguration;
+import com.palantir.conjure.java.okhttp.OkHttpClients;
 import com.palantir.conjure.java.serialization.ObjectMappers;
+import com.palantir.http.DefaultFailoverHttpClient;
+import com.palantir.http.FailoverHttpClient;
 import com.palantir.logsafe.SafeArg;
 import com.palantir.logsafe.UnsafeArg;
 import com.palantir.logsafe.exceptions.SafeIoException;
@@ -31,21 +37,28 @@ import feign.Request;
 import feign.Response;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 final class JavaClient implements Client {
     private static final ObjectMapper mapper = ObjectMappers.newClientObjectMapper();
+    private static final Set<String> ignoredHeaders = ignoredHeaders();
 
-    private final HttpClient client;
+    private final FailoverHttpClient client;
+    private final UserAgent userAgent;
 
-    JavaClient(HttpClient client) {
+    JavaClient(FailoverHttpClient client, UserAgent userAgent) {
         this.client = client;
+        this.userAgent = userAgent;
+    }
+
+    static JavaClient configure(ClientConfiguration config, UserAgent userAgent) {
+        return new JavaClient(DefaultFailoverHttpClient.configure(config), userAgent);
     }
 
     @Override
@@ -55,48 +68,38 @@ final class JavaClient implements Client {
                 .method(request.method(), bodyPublisher(request));
 
         Map<String, Collection<String>> headers =
-                Maps.filterKeys(request.headers(), key -> !key.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH));
+                Maps.filterKeys(request.headers(), key -> !ignoredHeaders.contains(key));
         headers.forEach((key, vals) -> requestBuilder.header(key, Joiner.on(",").join(vals)));
+        requestBuilder.setHeader(HttpHeaders.USER_AGENT, UserAgents.format(userAgent));
 
-        HttpRequest httpRequest = requestBuilder.build();
-        HttpResponse<byte[]> response = execute(httpRequest);
-
+        HttpResponse<byte[]> response = execute(requestBuilder);
 
         if (response.statusCode() / 100 == 2) {
             return Response.create(response.statusCode(), "", convert(response.headers().map()), response.body());
         } else {
-            throw handleError(response);
+            throw new RemoteException(deserializeError(response), response.statusCode());
         }
     }
 
-    private HttpResponse<byte[]> execute(HttpRequest request) throws IOException {
+    private HttpResponse<byte[]> execute(HttpRequest.Builder request) throws IOException {
         try {
-            // requestBuilder.timeout(Duration.ofMillis(1_000));
             return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new SafeIoException("Failed to complete the request due to an IOException", e);
         }
     }
 
-    private IOException handleError(HttpResponse<byte[]> response) throws SafeIoException {
-        Optional<SerializableError> serializableError = serializableError(response);
-
-        if (serializableError.isPresent()) {
-            throw new RemoteException(serializableError.get(), response.statusCode());
-        } else {
+    private SerializableError deserializeError(HttpResponse<byte[]> response) throws SafeIoException {
+        try {
+            return mapper.readValue(response.body(), SerializableError.class);
+        } catch (Exception e) {
             throw new SafeIoException("Failed to parse response body as SerializableError",
                     SafeArg.of("code", response.statusCode()),
                     UnsafeArg.of("body", new String(response.body(), StandardCharsets.UTF_8)),
                     SafeArg.of("contentType", response.headers().firstValue(HttpHeaders.CONTENT_TYPE)));
-        }
-    }
-
-    private Optional<SerializableError> serializableError(HttpResponse<byte[]> response) {
-        try {
-            return Optional.of(mapper.readValue(response.body(), SerializableError.class));
-        } catch (Exception e) {
-            return Optional.empty();
         }
     }
 
@@ -110,5 +113,11 @@ final class JavaClient implements Client {
     // Feign needs a Map<K, Collection<V>> when it should take a Map<K, ? extends Collection<V>>
     private static <K, V> Map<K, Collection<V>> convert(Map<K, ? extends Collection<V>> original) {
         return (Map<K, Collection<V>>) original;
+    }
+
+    private static Set<String> ignoredHeaders() {
+        TreeSet<String> set = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        set.add(HttpHeaders.CONTENT_LENGTH);
+        return set;
     }
 }

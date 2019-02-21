@@ -16,6 +16,7 @@ dependencies {
     implementation 'io.dropwizard.metrics:metrics-core'
     implementation 'javax.ws.rs:javax.ws.rs-api'
     implementation 'org.slf4j:slf4j-api'
+    implementation 'com.github.rholder:guava-retrying'
 
     testImplementation project(":conjure-java-jersey-server")
     testImplementation project(":keystores")

@@ -16,23 +16,19 @@
 
 package com.palantir.http;
 
-import com.google.common.collect.Lists;
 import com.palantir.conjure.java.api.config.service.BasicCredentials;
 import com.palantir.conjure.java.client.config.ClientConfiguration;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.security.GeneralSecurityException;
-import java.time.Duration;
-import java.util.List;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-public final class ConjureHttpClient {
+public final class HttpClients {
 
-    public static HttpClient conjureHttpClient(ClientConfiguration conf) {
+    public static HttpClient configure(ClientConfiguration conf) {
         HttpClient.Builder builder = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .connectTimeout(conf.connectTimeout())
@@ -43,10 +39,7 @@ public final class ConjureHttpClient {
                 .map(PasswordAuthenticator::new)
                 .ifPresent(builder::authenticator);
 
-        List<URI> uris = Lists.transform(conf.uris(), URI::create);
-        UriSelector selector = new UriSelector(uris, conf.nodeSelectionStrategy(), conf.failedUrlCooldown());
-
-        return new InterceptingHttpClient(builder.build(), selector);
+        return builder.build();
     }
 
     private static SSLContext createSslContext(TrustManager[] trustManagers, KeyManager[] keyManagers) {

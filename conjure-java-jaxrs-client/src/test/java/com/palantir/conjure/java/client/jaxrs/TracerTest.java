@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.reflect.Reflection;
 import com.palantir.conjure.java.okhttp.HostMetricsRegistry;
 import com.palantir.tracing.Tracer;
 import com.palantir.tracing.api.OpenSpan;
@@ -52,7 +53,7 @@ public final class TracerTest extends TestBase {
         OpenSpan parentTrace = Tracer.startSpan("");
 
         Tracer.subscribe(TracerTest.class.getName(), span -> {
-            assertThat(span.getOperation(), either(is("acquireLimiter")).or(is("GET /{param}")));
+            assertThat(span.getOperation(), either(is("acquireLimiter")).or(is("Client: GET /{param}")));
         });
 
         String traceId = Tracer.getTraceId();

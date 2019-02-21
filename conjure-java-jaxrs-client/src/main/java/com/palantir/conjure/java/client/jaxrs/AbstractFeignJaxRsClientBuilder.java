@@ -23,9 +23,11 @@ import com.palantir.conjure.java.client.jaxrs.feignimpl.GuavaOptionalAwareContra
 import com.palantir.conjure.java.client.jaxrs.feignimpl.Java8OptionalAwareContract;
 import com.palantir.conjure.java.client.jaxrs.feignimpl.PathTemplateHeaderEnrichmentContract;
 import com.palantir.conjure.java.client.jaxrs.feignimpl.SlashEncodingContract;
+import com.palantir.conjure.java.okhttp.ConjureUserAgents;
 import com.palantir.conjure.java.okhttp.HostEventsSink;
 import com.palantir.conjure.java.okhttp.OkHttpClients;
-import com.palantir.http.ConjureHttpClient;
+import com.palantir.http.DefaultLoadBalancer;
+import com.palantir.http.HttpClients;
 import com.palantir.logsafe.Preconditions;
 import feign.ConjureCborDelegateDecoder;
 import feign.ConjureCborDelegateEncoder;
@@ -98,7 +100,7 @@ abstract class AbstractFeignJaxRsClientBuilder {
                                                 new JacksonEncoder(objectMapper)))))
                 .decoder(createDecoder(objectMapper, cborObjectMapper))
                 // .client(new OkHttpClient(okHttpClient))
-                .client(new JavaClient(ConjureHttpClient.conjureHttpClient(config)))
+                .client(JavaClient.configure(config, ConjureUserAgents.augmentUserAgent(userAgent, serviceClass)))
                 .options(createRequestOptions())
                 .logLevel(Logger.Level.NONE)  // we use OkHttp interceptors for logging. (note that NONE is the default)
                 .retryer(new Retryer.Default(0, 0, 1))  // use OkHttp retry mechanism only
